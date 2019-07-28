@@ -108,6 +108,7 @@ function getHooks(gitDir: string): string[] {
 }
 
 /**
+ * @param topLevel - as returned by git --rev-parse
  * @param gitDir - as returned by git --rev-parse
  * @param huskyDir - e.g. /home/typicode/project/node_modules/husky/
  * @param pmName - which package manager was used to install husky
@@ -115,6 +116,7 @@ function getHooks(gitDir: string): string[] {
  */
 // eslint-disable-next-line max-params
 export function install(
+  topLevel: string,
   gitDir: string,
   huskyDir: string,
   pmName: string,
@@ -162,7 +164,10 @@ export function install(
   }
 
   const hooks = getHooks(gitDir)
-  const pathToUserPkgDir = path.relative(gitDir, userPkgDir)
+
+  // Path.relative can return '' if both paths are the same, so '.' is used as a default value
+  const pathToUserPkgDir = path.relative(topLevel, userPkgDir) || '.'
+  console.log({ pathToUserPkgDir, topLevel, userPkgDir })
   const script = getScript(pathToUserPkgDir, pmName)
   createHooks(hooks, script)
 
