@@ -4,12 +4,14 @@ import pkgDir from 'pkg-dir'
 import getConf from '../getConf'
 import getScript from './getScript'
 import { isGhooks, isHusky, isPreCommit, isYorkie } from './is'
+import debug from '../debug'
 
 const hookList = [
   'applypatch-msg',
   'pre-applypatch',
   'post-applypatch',
   'pre-commit',
+  'pre-merge-commit',
   'prepare-commit-msg',
   'commit-msg',
   'post-commit',
@@ -141,14 +143,6 @@ export function install(
   const conf = getConf(userPkgDir)
 
   // Checks
-  if (['1', 'true'].includes(process.env.HUSKY_SKIP_INSTALL || '')) {
-    console.log(
-      "HUSKY_SKIP_INSTALL environment variable is set to 'true',",
-      'skipping Git hooks installation.'
-    )
-    return
-  }
-
   if (isCI && conf.skipCI) {
     console.log('CI detected, skipping Git hooks installation.')
     return
@@ -167,11 +161,10 @@ export function install(
     fs.mkdirSync(gitHooksDir)
   }
 
+  debug(`Installing hooks in '${gitHooksDir}'`)
   const hooks = getHooks(gitDir)
   const script = getScript(topLevel, huskyDir, requireRunNodePath)
   createHooks(hooks, script)
-
-  console.log(`husky > Done`)
 }
 
 export function uninstall(gitDir: string, huskyDir: string): void {
@@ -192,6 +185,4 @@ export function uninstall(gitDir: string, huskyDir: string): void {
   // Remove hooks
   const hooks = getHooks(gitDir)
   removeHooks(hooks)
-
-  console.log('husky > Done')
 }
